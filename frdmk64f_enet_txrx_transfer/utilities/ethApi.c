@@ -109,8 +109,8 @@ void ethernet_build_frame(const char* message)
 {
     uint32_t count = 0;
     //uint32_t length = ENET_DATA_LENGTH - 14;
-    uint32_t mensaje_len = strlen(message);
-    uint32_t length = mensaje_len;
+    uint32_t msgLen = strlen(message);
+    uint32_t length = msgLen;
 
 
     /* Cabecera Ethernet */
@@ -123,7 +123,7 @@ void ethernet_build_frame(const char* message)
     ///AES128 encrypting
     /* Datos del mensaje */
     for (count = 0; count < length; count++) {
-        g_frame[count + 14] = message[count % mensaje_len];
+        g_frame[count + 14] = message[count % msgLen];
     }
 }
 
@@ -169,4 +169,62 @@ status_t ethernet_receive_frame(void)
     return status;
 }
 /*<----------####HARDWARE LAYER******************/
+
+///dynamic buffer
+uint8_t*  ethernet_buildPadding(uint8_t* message){
+		uint32_t count = 0;
+	    uint32_t msgLen = strlen(message);
+	    uint32_t length = msgLen;
+
+	    int ethernet_min_payload = 46;
+	    int total_payload_len = (msgLen < ethernet_min_payload) ? ethernet_min_payload : msgLen;
+
+	    // 3. Calcular tamaño total del frame
+	    int total_frame_len = 14 + total_payload_len;  // 14 bytes cabecera Ethernet
+
+	    // 4. Allocar buffer dinámico
+	    uint8_t* frame = (uint8_t*)malloc(total_frame_len);
+	    if (!frame) {
+	        return NULL;
+	    }
+
+	    // 5. Construir cabecera Ethernet
+	    memcpy(&frame[0], g_PCMacAddr, 6);   // MAC destino
+	    memcpy(&frame[6], g_macAddr, 6);     // MAC origen
+	    frame[12] = (total_payload_len >> 8) & 0xFF;  // Campo longitud
+	    frame[13] = total_payload_len & 0xFF;
+
+	    // 6. Copiar mensaje ya cifrado
+	    memcpy(&frame[14], message, msgLen);
+
+	    // 7. Padding Ethernet solo si es necesario (relleno con 0s)
+	    if (total_payload_len > msgLen) {
+	        memset(&frame[14 + msgLen], 0, total_payload_len - msgLen);
+	    }
+	    return frame;
+}
+static int multiple_of_46_ceiling(int number) {
+    int remainder = number % 46;
+    if (remainder == 0) {
+        return number;  // Ya es múltiplo
+    } else {
+        return number + (46 - remainder);
+    }
+}
+status_t ethernet_sendPadding(uint8_t* etheBuffer, uint16_t length){
+    bool link = false;
+    int payload_len = multiple_of_46_ceiling(length);
+    if (payload_len < 46) payload_len = 46;  // Asegurar mínimo
+    if (kStatus_Success == PHY_GetLinkStatus(&phyHandle, &link)) {
+        if (link) {
+            if (kStatus_Success == ENET_SendFrame(EXAMPLE_ENET, &g_handle, etheBuffer, payload_len, 0, false, NULL)) {
+            	SDK_DelayAtLeastUs(1000000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY); // 1 segundo de delay
+                return kStatus_Success;
+            }
+        }
+    }
+    return kStatus_Fail;
+}
+
+
 

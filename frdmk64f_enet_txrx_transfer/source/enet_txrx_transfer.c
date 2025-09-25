@@ -15,18 +15,18 @@
 int main(void)
 {
 
-    /* 1 physical and encryption layers init*/
+    /* 1 physical and encryption layers*/
     int status = aesApi_init();
-
     /* 2. encrypt desired MSg before sending */
-    encryptMsg("refactor worked");
+
+    //test decoding
+
 
     while (1) {
         /* Receive and decode msgs*/
     	aesApi_receive();
-
-        /*Transmit msgs */
-    	aesApi_send();
+    	/*encrypt and send msgs*/
+        encryptSendMsg("Vicente");
 
    }
 

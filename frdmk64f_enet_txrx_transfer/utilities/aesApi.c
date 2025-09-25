@@ -28,7 +28,7 @@ int aesApi_init(){
     ethernet_init_enet();
 
 }
-int encryptMsg(const char* message){
+int encryptSendMsg(const char* message){
     int message_len = strlen(message);
     //total length with padding
     int padding = 16 - (message_len % 16);
@@ -46,8 +46,9 @@ int encryptMsg(const char* message){
 	AES_ECB_encrypt(&ctx, encryptedMsg);
 
 	//transport layer protocol,
-	ethernet_build_frame(encryptedMsg);
-	//ethernet_build_frame(message);
+	uint8_t* encryptedBuffer = ethernet_buildPadding(encryptedMsg);
+	ethernet_sendPadding(encryptedBuffer, total_length);
+	asm("nop");
 }
 int aesApi_receive(){
 	ethernet_receive_frame();

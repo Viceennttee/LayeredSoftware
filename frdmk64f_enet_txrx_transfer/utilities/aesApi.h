@@ -8,7 +8,7 @@
 
 /*physical layer initialization*/
 int aesApi_init();
-int encryptMsg(const char* message);
+int encryptSendMsg(const char* message);
 int aesApi_send();
 int aesApi_receive();
 

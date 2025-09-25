@@ -36,14 +36,16 @@
 #define MAC_ADDRS_PC {0x00, 0xE0, 0x4C, 0x68, 0x00, 0xCF}
 #endif
 
-
-//need to be moved
 status_t ethernet_receive_frame(void);
 void ethernet_build_frame(const char* message);
 status_t ethernet_send_test_frame(void);
 status_t ethernet_init_hardware(void);
 status_t ethernet_init_phy(void);
 status_t ethernet_init_enet(void);
+
+///dinamic buffer
+uint8_t* ethernet_buildPadding(uint8_t* message);
+status_t ethernet_sendPadding(uint8_t* etheBuffer, uint16_t lentgh);
 
 
 #endif
