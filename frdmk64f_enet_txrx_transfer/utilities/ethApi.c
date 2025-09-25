@@ -108,8 +108,10 @@ status_t ethernet_init_phy(void)
 void ethernet_build_frame(const char* message)
 {
     uint32_t count = 0;
-    uint32_t length = ENET_DATA_LENGTH - 14;
+    //uint32_t length = ENET_DATA_LENGTH - 14;
     uint32_t mensaje_len = strlen(message);
+    uint32_t length = mensaje_len;
+
 
     /* Cabecera Ethernet */
     memcpy(&g_frame[0], &g_PCMacAddr[0], 6U);
@@ -139,19 +141,6 @@ status_t ethernet_send_test_frame(void)
     return kStatus_Fail;
 }
 
-static void ethernet_process_received_data(uint8_t* data, uint32_t length)
-{
-    PRINTF(" A frame received. the length %d ", length);
-    PRINTF(" Dest Address %02x:%02x:%02x:%02x:%02x:%02x Src Address %02x:%02x:%02x:%02x:%02x:%02x \r\n",
-           data[0], data[1], data[2], data[3], data[4], data[5],
-           data[6], data[7], data[8], data[9], data[10], data[11]);
-
-    /*AES decoding*/
-
-    /*AES decoding*/
-
-
-}
 status_t ethernet_receive_frame(void)
 {
     uint32_t length = 0;
@@ -164,7 +153,10 @@ status_t ethernet_receive_frame(void)
         uint8_t *data = (uint8_t *)malloc(length);
         status = ENET_ReadFrame(EXAMPLE_ENET, &g_handle, data, length, 0, NULL);
         if (status == kStatus_Success) {
-            ethernet_process_received_data(data, length);
+            //ethernet_process_received_data(data, length);
+        	/////aes decoding
+            //AES_ECB_decrypt(&ctx, data);
+
         }
         free(data);
         return status;

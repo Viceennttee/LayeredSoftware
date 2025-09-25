@@ -6,10 +6,6 @@ static uint8_t key[16] = {
     0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c
 };
 struct AES_ctx ctx;
-
-uint8_t mensaje_ecb[16] = "HolaECB12345678";
-uint8_t cifrado_ecb[16];
-uint8_t descifrado_ecb[16];
 //////////<------------------
 
 
@@ -30,23 +26,42 @@ int aesApi_init(){
     }
 
     ethernet_init_enet();
+
 }
 int encryptMsg(const char* message){
-	//AES_ECB_encrypt(&ctx, message);
-	ethernet_build_frame(message);
+    int message_len = strlen(message);
+    //total length with padding
+    int padding = 16 - (message_len % 16);
+    int total_length = message_len + padding;
+
+
+    uint8_t encryptedMsg[total_length];
+    memcpy(encryptedMsg, message, message_len);  //copy data from const
+
+    //add KCS7 padding
+    for (int i = message_len; i < total_length; i++) {
+    	encryptedMsg[i] = (uint8_t)padding;
+    }
+
+	AES_ECB_encrypt(&ctx, encryptedMsg);
+
+	//transport layer protocol,
+	ethernet_build_frame(encryptedMsg);
+	//ethernet_build_frame(message);
 }
 int aesApi_receive(){
 	ethernet_receive_frame();
+	uint8_t testMsg[] = {81,101,217,138,39,57,169,99,14,220,240,224,214,29,145,75};
+    AES_ECB_decrypt(&ctx, testMsg);
+    asm("nop");
+
 }
 int aesApi_send() {
 	uint32_t testTxNum = 0;
-    /* Transmisión - solo las primeras veces */
-    if (testTxNum < ENET_TRANSMIT_DATA_NUM) {
-        if (ethernet_send_test_frame() == kStatus_Success) {
-            testTxNum++;
-            PRINTF("The %d frame transmitted success!\r\n", testTxNum);
-            SDK_DelayAtLeastUs(1000000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
-        }
+	if (ethernet_send_test_frame() == kStatus_Success) {
+        PRINTF("The %d frame transmitted success!\r\n", testTxNum);
+        testTxNum++;
+		SDK_DelayAtLeastUs(1000000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
 
 }
 }
