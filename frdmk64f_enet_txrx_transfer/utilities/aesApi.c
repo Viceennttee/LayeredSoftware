@@ -43,7 +43,7 @@ int encryptSendMsg(const char* message){
     	encryptedMsg[i] = (uint8_t)padding;
     }
 
-	AES_ECB_encrypt(&ctx, encryptedMsg);
+	AES_CBC_encrypt_buffer(&ctx, encryptedMsg, total_length);
 
 	//transport layer protocol,
 	uint8_t* encryptedBuffer = ethernet_buildPadding(encryptedMsg, total_length);
