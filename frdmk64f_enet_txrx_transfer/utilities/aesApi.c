@@ -48,7 +48,7 @@ int encryptSendMsg(const char* message){
 	//transport layer protocol,
 	uint8_t* encryptedBuffer = ethernet_buildPadding(encryptedMsg);
 	ethernet_sendPadding(encryptedBuffer, total_length);
-	asm("nop");
+    free(encryptedBuffer);  
 }
 int aesApi_receive(){
 	ethernet_receive_frame();
