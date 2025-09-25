@@ -243,7 +243,7 @@ uint8_t* ethernet_receive(void){
 	        if (status == kStatus_Success) {
 	            return data;
 	        }
-	        return 0;
+	        return NULL;
 	    }
 }
 

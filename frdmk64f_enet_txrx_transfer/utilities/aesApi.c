@@ -55,7 +55,9 @@ int aesApi_receive(){
 	/* TRASNPORT LAYER --------->*/
 	uint8_t* ethMsg = ethernet_receive();
 	/*<------------- TRASNPORT LAYER*/
-    AES_ECB_decrypt(&ctx, ethMsg);
+	if(ethMsg != NULL){
+	    AES_ECB_decrypt(&ctx, ethMsg);
+	}
     free(ethMsg);
 
 }
