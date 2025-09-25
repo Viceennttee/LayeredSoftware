@@ -1,20 +1,11 @@
 #include "aesApi.h"
 #include "ethApi.h"
-////////////parameters for AES//----------------->
-static uint8_t key[16] = {
-    0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
-    0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c
-};
-static uint8_t iv[]  = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
-struct AES_ctx ctx;
-//////////<------------------
-
 
 /*################ENCRYPTION LAYER------------->*/
 int aesApi_init(){
 
 	//aes init
-	 AES_init_ctx_iv(&ctx, key,iv);
+	 AES_init_ctx_iv(&ctx_cfg, key_cfg,iv_cfg);
 
     /* 1. this whole init could be contained in a single ethInit function
      * making static fucntions that are just called by ethInit
@@ -44,7 +35,7 @@ int encryptSendMsg(const char* message){
     	encryptedMsg[i] = (uint8_t)padding;
     }
 
-	AES_CBC_encrypt_buffer(&ctx, encryptedMsg, total_length);
+	AES_CBC_encrypt_buffer(&ctx_cfg, encryptedMsg, total_length);
 
 	//transport layer protocol,
 	uint8_t* encryptedBuffer = ethernet_buildPadding(encryptedMsg, total_length);
@@ -57,7 +48,7 @@ int aesApi_receive(){
 	uint8_t* ethMsg = ethernet_receive();
 	/*<------------- TRASNPORT LAYER*/
 	if(ethMsg != NULL){
-	    AES_ECB_decrypt(&ctx, ethMsg);
+	    AES_ECB_decrypt(&ctx_cfg, ethMsg);
 	}
     free(ethMsg);
 
