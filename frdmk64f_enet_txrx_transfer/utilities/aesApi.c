@@ -46,24 +46,17 @@ int encryptSendMsg(const char* message){
 	AES_ECB_encrypt(&ctx, encryptedMsg);
 
 	//transport layer protocol,
-	uint8_t* encryptedBuffer = ethernet_buildPadding(encryptedMsg);
+	uint8_t* encryptedBuffer = ethernet_buildPadding(encryptedMsg, total_length);
 	ethernet_sendPadding(encryptedBuffer, total_length);
-    free(encryptedBuffer);  
+	free(encryptedBuffer);
+	asm("nop");
 }
 int aesApi_receive(){
-	ethernet_receive_frame();
-	uint8_t testMsg[] = {81,101,217,138,39,57,169,99,14,220,240,224,214,29,145,75};
-    AES_ECB_decrypt(&ctx, testMsg);
-    asm("nop");
+	/* TRASNPORT LAYER --------->*/
+	uint8_t* ethMsg = ethernet_receive();
+	/*<------------- TRASNPORT LAYER*/
+    AES_ECB_decrypt(&ctx, ethMsg);
+    free(ethMsg);
 
-}
-int aesApi_send() {
-	uint32_t testTxNum = 0;
-	if (ethernet_send_test_frame() == kStatus_Success) {
-        PRINTF("The %d frame transmitted success!\r\n", testTxNum);
-        testTxNum++;
-		SDK_DelayAtLeastUs(1000000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
-
-}
 }
 
