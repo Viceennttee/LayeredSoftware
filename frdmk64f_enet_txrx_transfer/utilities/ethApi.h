@@ -44,8 +44,12 @@ status_t ethernet_init_phy(void);
 status_t ethernet_init_enet(void);
 
 ///dinamic buffer
-uint8_t* ethernet_buildPadding(uint8_t* message);
+uint8_t* ethernet_buildPadding(uint8_t* message, uint16_t size);
 status_t ethernet_sendPadding(uint8_t* etheBuffer, uint16_t lentgh);
+
+///receive funciton
+uint8_t* ethernet_receive(void);
+
 
 
 #endif

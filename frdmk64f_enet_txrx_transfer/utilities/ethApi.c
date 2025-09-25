@@ -171,13 +171,12 @@ status_t ethernet_receive_frame(void)
 /*<----------####HARDWARE LAYER******************/
 
 ///dynamic buffer
-uint8_t*  ethernet_buildPadding(uint8_t* message){
+uint8_t*  ethernet_buildPadding(uint8_t* message, uint16_t size){
 		uint32_t count = 0;
-	    uint32_t msgLen = strlen(message);
-	    uint32_t length = msgLen;
+	    uint32_t length = size;
 
 	    int ethernet_min_payload = 46;
-	    int total_payload_len = (msgLen < ethernet_min_payload) ? ethernet_min_payload : msgLen;
+	    int total_payload_len = (size < ethernet_min_payload) ? ethernet_min_payload : size;
 
 	    // 3. Calcular tamaño total del frame
 	    int total_frame_len = 14 + total_payload_len;  // 14 bytes cabecera Ethernet
@@ -191,15 +190,15 @@ uint8_t*  ethernet_buildPadding(uint8_t* message){
 	    // 5. Construir cabecera Ethernet
 	    memcpy(&frame[0], g_PCMacAddr, 6);   // MAC destino
 	    memcpy(&frame[6], g_macAddr, 6);     // MAC origen
-	    frame[12] = (total_payload_len >> 8) & 0xFF;  // Campo longitud
-	    frame[13] = total_payload_len & 0xFF;
+	    frame[12] = (size >> 8) & 0xFF;  // Campo longitud
+	    frame[13] = size & 0xFF;
 
 	    // 6. Copiar mensaje ya cifrado
-	    memcpy(&frame[14], message, msgLen);
+	    memcpy(&frame[14], message, size);
 
 	    // 7. Padding Ethernet solo si es necesario (relleno con 0s)
-	    if (total_payload_len > msgLen) {
-	        memset(&frame[14 + msgLen], 0, total_payload_len - msgLen);
+	    if (total_payload_len > size) {
+	        memset(&frame[14 + size], 0, total_payload_len - size);
 	    }
 	    return frame;
 }
@@ -211,6 +210,10 @@ static int multiple_of_46_ceiling(int number) {
         return number + (46 - remainder);
     }
 }
+
+
+
+///own functions
 status_t ethernet_sendPadding(uint8_t* etheBuffer, uint16_t length){
     bool link = false;
     int payload_len = multiple_of_46_ceiling(length);
@@ -226,5 +229,22 @@ status_t ethernet_sendPadding(uint8_t* etheBuffer, uint16_t length){
     return kStatus_Fail;
 }
 
+
+uint8_t* ethernet_receive(void){
+		uint32_t length = 0;
+	    status_t status;
+	    enet_data_error_stats_t eErrStatic;
+
+	    status = ENET_GetRxFrameSize(&g_handle, &length, 0);
+
+	    if (length != 0) {
+	        uint8_t *data = (uint8_t *)malloc(length);
+	        status = ENET_ReadFrame(EXAMPLE_ENET, &g_handle, data, length, 0, NULL);
+	        if (status == kStatus_Success) {
+	            return data;
+	        }
+	        return 0;
+	    }
+}
 
 
